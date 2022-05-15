@@ -1171,7 +1171,7 @@ input[type="file"]{
 }
 
 .sidebar .arrow {
-    float: right;
+    float: left;
     font-size:24px;
     margin-right:0;
 }
