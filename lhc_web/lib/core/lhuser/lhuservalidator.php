@@ -354,10 +354,19 @@ class erLhcoreClassUserValidator {
             'exclude_autoasign' => new ezcInputFormDefinitionElement(
 				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
 			),
+            'remove_closed_chats' => new ezcInputFormDefinitionElement(
+				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+			),
             'auto_uppercase' => new ezcInputFormDefinitionElement(
 				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
 			),
             'auto_join_private' => new ezcInputFormDefinitionElement(
+				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+			),
+            'auto_preload' => new ezcInputFormDefinitionElement(
+				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+			),
+            'no_scroll_bottom' => new ezcInputFormDefinitionElement(
 				ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
 			),
             'maximumChats' => new ezcInputFormDefinitionElement(
@@ -381,12 +390,30 @@ class erLhcoreClassUserValidator {
             $result['auto_uppercase'] = 0;
 		}
 
+		if ( $form->hasValidData( 'no_scroll_bottom' ) && $form->no_scroll_bottom == true ) {
+            $result['no_scroll_bottom'] = 1;
+		} else {
+            $result['no_scroll_bottom'] = 0;
+		}
+
+		if ( $form->hasValidData( 'auto_preload' ) && $form->auto_preload == true ) {
+            $result['auto_preload'] = 1;
+		} else {
+            $result['auto_preload'] = 0;
+		}
+
 		if ( $form->hasValidData( 'autoAccept' ) && $form->autoAccept == true ) {
             $result['auto_accept'] = 1;
 		} else {
             $result['auto_accept'] = 0;
 		}
-		
+
+		if ( $form->hasValidData( 'remove_closed_chats' ) && $form->remove_closed_chats == true ) {
+            $result['remove_closed_chats'] = 1;
+		} else {
+            $result['remove_closed_chats'] = 0;
+		}
+
 		if ( $form->hasValidData( 'auto_join_private' ) && $form->auto_join_private == true ) {
             $result['auto_join_private'] = 1;
 		} else {
@@ -471,12 +498,16 @@ class erLhcoreClassUserValidator {
 		if (isset($params['show_all_pending'])) {
 			$paramsPending = self::validateShowAllPendingOption();
             $params = array_merge($params,$paramsPending);
+
+            $paramsNotifications = erLhcoreClassUserValidator::validateNotifications();
+            $params = array_merge($params,$paramsNotifications);
 		}
 
         $userData->auto_accept = $params['auto_accept'];
         $userData->max_active_chats = $params['max_chats'];
+        $userData->exclude_autoasign = $params['exclude_autoasign'];
         $userData->pswd_updated = time();
-        
+
 		erLhcoreClassChatEventDispatcher::getInstance()->dispatch('user.new_user', array('userData' => & $userData, 'errors' => & $Errors));
 		
 		return $Errors;
@@ -590,19 +621,21 @@ class erLhcoreClassUserValidator {
 	        ),
             'show_alert_transfer' => new ezcInputFormDefinitionElement(
 	            ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
-	        )
+	        ),
+            'hide_quick_notifications' => new ezcInputFormDefinitionElement(
+                ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+            ),
 	    );
 	    
 	    $form = new ezcInputForm( INPUT_POST, $definition );
-	    
-	    $Errors = array();
-	    
+
 	    $data['show_alert_chat'] = ( $form->hasValidData( 'show_alert_chat' ) && $form->show_alert_chat == true ) ? 1 : 0;
 	    $data['sn_off'] = ( $form->hasValidData( 'sn_off' ) && $form->sn_off == true ) ? 1 : 0;
 	    $data['ownntfonly'] = ( $form->hasValidData( 'ownntfonly' ) && $form->ownntfonly == true ) ? 1 : 0;
 	    $data['trackactivity'] = ( $form->hasValidData( 'trackactivity' ) && $form->trackactivity == true ) ? 1 : 0;
 	    $data['trackactivitytimeout'] = ( $form->hasValidData( 'trackactivitytimeout' )) ? (int)$form->trackactivitytimeout : -1;
 	    $data['show_alert_transfer'] = ( $form->hasValidData( 'show_alert_transfer' ) && $form->show_alert_transfer == true) ? (int)$form->show_alert_transfer : 0;
+	    $data['hide_quick_notifications'] = ( $form->hasValidData( 'hide_quick_notifications' ) && $form->hide_quick_notifications == true) ? (int)$form->hide_quick_notifications : 0;
 
 	    return $data;
 	}
@@ -612,6 +645,10 @@ class erLhcoreClassUserValidator {
 	    $globalDepartament = array();
 
         $attr = isset($params['read_only']) && $params['read_only'] == true ?  'UserDepartamentGroupRead' : 'UserDepartamentGroup';
+
+        if (isset($params['exclude_auto']) && $params['exclude_auto'] == true) {
+            $attr = 'UserDepartamentGroupAutoExc';
+        }
 
         if ($params['edit_params']['groups']['edit_all'] == true) {
 
@@ -641,6 +678,10 @@ class erLhcoreClassUserValidator {
                 $globalDepartament = $params['edit_params']['groups']['remote_id_read_all'];
             } else {
                 $globalDepartament = $params['edit_params']['groups']['remote_id_write_all'];
+            }
+
+            if (isset($params['exclude_auto']) && $params['exclude_auto'] == true) {
+                $globalDepartament = $params['edit_params']['groups']['remote_id_auto_assign_all'];
             }
         }
 
@@ -1188,6 +1229,10 @@ class erLhcoreClassUserValidator {
                 $departmentEditParams['groups']['remote_id_read_all'] = erLhcoreClassModelDepartamentGroupUser::getUserGroupsIds(
                     $UserData->id,
                     true
+                );
+
+                $departmentEditParams['groups']['remote_id_auto_assign_all'] = erLhcoreClassModelDepartamentGroupUser::getUserGroupsExcAutoassignIds(
+                    $UserData->id
                 );
             }
 

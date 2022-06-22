@@ -25,12 +25,17 @@
         <label><input type="checkbox" name="log_user" <?php if (isset($audit_options['log_user']) && $audit_options['log_user'] == true) : ?>checked<?php endif;?> value="on" /> <?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('audit/options','Log users changes')?></label>
     </div>
 
+    <div class="form-group">
+        <label><input type="checkbox" name="log_files" <?php if (isset($audit_options['log_files']) && $audit_options['log_files'] == true) : ?>checked<?php endif;?> value="on" /> <?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('audit/options','Log failed files uploads')?></label>
+    </div>
+
     <h5><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('audit/options','What objects changes log?')?></h5>
     <?php $objectsLog = array(
         array('class' => 'AutoResponder' ,'name' => 'Auto Responder'),
         array('class' => 'CannedMsg' ,'name' => 'Canned Message'),
         array('class' => 'Subject' ,'name' => 'Subject'),
         array('class' => 'Departament' ,'name' => 'Department'),
+        array('class' => 'ChatConfig' ,'name' => 'Chat configuration'),
     );
     ?>
 

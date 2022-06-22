@@ -1,6 +1,6 @@
 <?php 
 
-return array(
+$surveyFields = array(
     'name' => array(
         'type' => 'text',
         'trans' => erTranslationClassLhTranslation::getInstance()->getTranslation('abstract/survey','Name'),
@@ -10,10 +10,14 @@ return array(
             ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
         )),
     'feedback_text' => array(
-        'type' => 'text',
-        'trans' => erTranslationClassLhTranslation::getInstance()->getTranslation('abstract/survey','Feedback text'),
-        'required' => false,
+        'type' => 'textarea',
+        'height' => '86px',
+        'main_attr_lang' => 'configuration_array',
+        'translatable' => true,
         'hidden' => true,
+        'trans' => erTranslationClassLhTranslation::getInstance()->getTranslation('abstract/survey','Feedback text'),
+        'placeholder' => erTranslationClassLhTranslation::getInstance()->getTranslation('survey/fill','Thank you for your feedback...'),
+        'required' => false,
         'validation_definition' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
         )),
@@ -611,4 +615,32 @@ return array(
         )),
 );
 
+for ($i = 1; $i < 5; $i++) {
+
+    $surveyFields['min_stars_question_plain_' . $i] = array(
+        'type' => 'text',
+        'main_attr' => 'configuration_array',
+        'trans' => erTranslationClassLhTranslation::getInstance()->getTranslation('abstract/widgettheme',' Required only if stars less or equal to 1 - n'),
+        'required' => false,
+        'hidden' => true,
+        'nginit' => true,
+        'validation_definition' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'int', array('min' => 1)
+        ));
+
+    $surveyFields['star_field_question_plain_' . $i] = array(
+        'type' => 'text',
+        'main_attr' => 'configuration_array',
+        'trans' => erTranslationClassLhTranslation::getInstance()->getTranslation('abstract/widgettheme','Stars field Nr. (1-5)'),
+        'required' => false,
+        'hidden' => true,
+        'nginit' => true,
+        'validation_definition' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'int', array('min' => 1, 'max' => 5)
+        ));
+}
+
+
+
+return $surveyFields;
 ?>

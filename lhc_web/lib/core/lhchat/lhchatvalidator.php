@@ -85,7 +85,25 @@ class erLhcoreClassChatValidator {
 		
 		return $Errors;
 	}
-	
+
+    public static function getVisitorLocale() {
+        // Detect user locale
+        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            $parts = explode(';',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            $languages = explode(',',$parts[0]);
+            if (isset($languages[0])) {
+                $partsLanguages = explode('-',$languages[0]);
+                if (count($partsLanguages) >= 2) {
+                    return substr($partsLanguages[0] . '-' . $partsLanguages[1],0,10);
+                } else {
+                    return substr($partsLanguages[0],0,10);
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Custom form fields validation
      */
@@ -742,12 +760,10 @@ class erLhcoreClassChatValidator {
         }
 
         // Detect user locale
-        if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $parts = explode(';',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            $languages = explode(',',$parts[0]);
-            if (isset($languages[0])) {
-                $chat->chat_locale = $languages[0];
-            }
+        $locale = self::getVisitorLocale();
+
+        if ($locale !== null) {
+            $chat->chat_locale = $locale;
         }
 
         // We set custom chat locale only if visitor is not using default siteaccss and default langauge is not english.
@@ -837,6 +853,10 @@ class erLhcoreClassChatValidator {
             $Errors['blocked_user'] = erTranslationClassLhTranslation::getInstance()->getTranslation('chat/startchat','At this moment you can contact us via email only. Sorry for the inconveniences.');
         }
 
+        if (isset($Errors['blocked_user']) && isset($additionalParams['theme']) && $additionalParams['theme'] !== false && isset($additionalParams['theme']->bot_configuration_array['blocked_visitor']) && !empty($additionalParams['theme']->bot_configuration_array['blocked_visitor'])) {
+            $Errors['blocked_user'] = erLhcoreClassBBCode::make_clickable(htmlspecialchars(erLhcoreClassGenericBotWorkflow::translateMessage($additionalParams['theme']->bot_configuration_array['blocked_visitor'], array('chat' => $chat, 'args' => ['chat' => $chat]))));
+        }
+
         erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.validate_start_chat',array('errors' => & $Errors, 'input_form' => & $inputForm, 'start_data_fields' => & $start_data_fields, 'chat' => & $chat,'additional_params' => & $additionalParams));
 
         if (trim($chat->nick) == '') {
@@ -862,6 +882,8 @@ class erLhcoreClassChatValidator {
                 $val = trim($data[str_replace('lhc_var.','',$jsVar->js_variable)]);
             } elseif (isset($data[$jsVar->id]) && !empty($data[$jsVar->id])) {
                 $val = trim($data[$jsVar->id]);
+            } elseif ($jsVar->old_js_id != '' && isset($data['prefill_' . $jsVar->old_js_id]) && !empty($data['prefill_' . $jsVar->old_js_id])) {
+                $val = trim($data['prefill_' . $jsVar->old_js_id]);
             }
 
             if (!empty($val)) {
@@ -2119,12 +2141,10 @@ class erLhcoreClassChatValidator {
                     }
 
                     // Detect user locale
-                    if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-                        $parts = explode(';',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-                        $languages = explode(',',$parts[0]);
-                        if (isset($languages[0])) {
-                            $chat->chat_locale = $languages[0];
-                        }
+                    $locale = self::getVisitorLocale();
+
+                    if ($locale !== null) {
+                        $chat->chat_locale = $locale;
                     }
 
                     // Detect device

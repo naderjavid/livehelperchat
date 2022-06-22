@@ -262,7 +262,6 @@ textarea[name=ChatMessage]{
     top:-8px;*/
     padding:3px;
     border-radius:10px;
-    font-style: italic;
     color: #9a9a9a;
 }
 
@@ -644,10 +643,58 @@ div.pending-storage {
 .message-block{
     font-size: 13px;
 }
-
-div.message-admin+div.message-admin .msg-date,div.message-row.response+div.message-row.response .msg-date,
 #messagesBlock .message-row .msg-date{
     display:none;
+}
+
+.msg-date-op,
+.msg-date-vi{
+    display: inline-block;
+    background: #40464e;
+    border-radius: 6px;
+    border: 1px solid #323232;
+    line-height: 9px!important;
+    position: relative;
+    z-index: 99;
+    padding:2px 3px!important;
+    color: #bcbcbc !important;
+    font-size: 10px;
+}
+
+.msg-date-vi{
+    left:0px;
+}
+
+.msg-date-op{
+    right:0px;
+}
+
+div.message-row.message-admin+div.message-row.message-admin .msg-date-op{
+    display: block;
+    position: absolute;
+    margin-top:-9px;
+    right:0px;
+}
+
+div.message-row.response+div.message-row.response .msg-date-vi{
+    display: block;
+    position: absolute;
+    margin-top:-9px;
+    left:0px;
+}
+
+div.message-row.operator-changes .msg-date-op{
+    position: relative!important;
+    display: inline-block!important;
+    margin: 0!important;
+}
+
+div.message-row.response div.msg-body{
+    border-top-left-radius: 0;
+}
+
+div.message-row.message-admin div.msg-body{
+    border-top-right-radius: 0;
 }
 
 .last-user-msg{
@@ -1110,11 +1157,11 @@ input[type="file"]{
 }
 
 
-#path-container{
-    margin-top:-15px;
-    margin-right:-15px;
-    margin-left:-15px;
-    margin-bottom:15px;
+#path-container {
+    margin-top:0px;
+    margin-right:-7px;
+    margin-left:-7px;
+    margin-bottom:7px;
 }
 
 #page-content-wrapper {

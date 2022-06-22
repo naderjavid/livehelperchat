@@ -267,12 +267,8 @@ textarea[name=ChatMessage]{
 	font-size:11px;
 	line-height:11px;
 	margin-top:0px;
-	/*position:absolute;
-	right:0;
-	top:-8px;*/
 	padding:3px;
 	border-radius:10px;
-	font-style: italic;
 }
 
 .system-response .msg-date{
@@ -664,9 +660,61 @@ div.pending-storage {
 	font-size: 13px;
 }
 
-div.message-admin+div.message-admin .msg-date,div.message-row.response+div.message-row.response .msg-date,
+div.message-admin+div.message-admin .msg-date,
+div.message-row.response+div.message-row.response .msg-date,
 #messagesBlock .message-row .msg-date{
-	display:none;
+    display:none;
+}
+
+.msg-date-op,
+.msg-date-vi{
+    display: inline-block;
+    background: #f7f7f7;
+    border-radius: 6px;
+    border: 1px solid white;
+    line-height: 9px!important;
+    position: relative;
+    z-index: 99;
+    padding:2px 3px!important;
+    color: #858585 !important;
+    font-size: 10px;
+}
+
+.msg-date-vi{
+    left:0px;
+}
+
+.msg-date-op{
+    right:0px;
+}
+
+div.message-row.message-admin+div.message-row.message-admin .msg-date-op{
+    display: block;
+    position: absolute;
+    margin-top:-9px;
+    right:0px;
+}
+
+div.message-row.response+div.message-row.response .msg-date-vi{
+    display: block;
+    position: absolute;
+    margin-top:-9px;
+    left:0px;
+}
+
+div.message-row.operator-changes .msg-date-op{
+    position: relative!important;
+    display: inline-block!important;
+    margin: 0!important;
+}
+
+div.message-row.response div.msg-body{
+    border-top-left-radius: 0;
+
+}
+
+div.message-row.message-admin div.msg-body{
+    border-top-right-radius: 0;
 }
 
 .last-user-msg{

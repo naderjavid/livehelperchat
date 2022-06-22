@@ -1612,7 +1612,7 @@ class erLhcoreClassGenericBotWorkflow {
         $recursion_counter++;
 
         // Limit calls only for web calls
-        if (($recursion_counter > 50 && erLhcoreClassSystem::instance()->backgroundMode === false) || $recursion_counter > 10000) {
+        if (($recursion_counter > 50 && erLhcoreClassSystem::instance()->backgroundMode === false) || $recursion_counter > 100000) {
             throw new Exception('To many calls to process trigger! [50]');
         }
 
@@ -2235,12 +2235,9 @@ class erLhcoreClassGenericBotWorkflow {
         }
 
         if ($locale === null) {
-            if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-                $parts = explode(';',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-                $languages = explode(',',$parts[0]);
-                if (isset($languages[0])) {
-                    $locale = $languages[0];
-                }
+            $chatLocale = erLhcoreClassChatValidator::getVisitorLocale();
+            if ($chatLocale !== null) {
+                $locale = $chatLocale;
             }
         }
 

@@ -1320,9 +1320,9 @@ class erLhcoreClassChat {
 
 	    $y = floor($seconds / (86400*365.25));
 	    $d = floor(($seconds - ($y*(86400*365.25))) / 86400);
-	    $h = gmdate('H', $seconds);
-	    $m = gmdate('i', $seconds);
-	    $s = gmdate('s', $seconds);
+	    $h = gmdate('H', (int)$seconds);
+	    $m = gmdate('i', (int)$seconds);
+	    $s = gmdate('s', (int)$seconds);
 
 	    $parts = array();
         $hasYears = false;
@@ -2207,7 +2207,7 @@ class erLhcoreClassChat {
            if (is_numeric($themeId)) {
                $theme = erLhAbstractModelWidgetTheme::fetch($themeId);
                // Don't expose existing theme
-               if ($checkAlias == true && $theme->alias != '') {
+               if ($checkAlias == true && $theme instanceof erLhAbstractModelWidgetTheme && $theme->alias != '') {
                    return false;
                }
            } else {

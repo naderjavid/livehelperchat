@@ -1,3 +1,47 @@
+4.07v
+
+1. Additional chat columns can be sorted [Pending chats, Active chats] widgets supports
+
+execute doc/update_db/update_279.sql for update
+
+4.06v
+
+Now there is an option to assign operator to department/department group and at the same time exclude him from auto assignment workflow.
+
+E.g You have operators who works only with VIP department, but when they don't have much to do they want to accept chats manually from lower level departments. With that option you can do that.
+
+* VIP Department chats will be auto assignment.
+* But lower level chats they would need to take manually.
+
+execute doc/update_db/update_278.sql for update
+
+4.05v
+
+1. You can have custom keyboard shortcuts for bot commands.
+2. Commands now have --silent and --update_status options. Read about them on documentation.
+3. Using above new features you can have a custom chat close shortcut add subject etc... Unlimited options.
+
+execute doc/update_db/update_277.sql for update
+
+4.04v
+
+1. We will be able to read variable passed like this. In additional chat variables `Old way passed variable name` just enter `username`. This will improve compatibility with older embed codes.
+```
+LHCChatOptions =
+  {
+      "attr_prefill": [
+          {
+              "name": "username",
+              "value": "remdex"
+          }
+      ]
+  }
+```
+2. `{args.` will be supported in canned messages and canned messages replace variables. E.g `{args.chat.chat_variables_array.player.firstName}`
+3. Various small bugfixes.
+
+execute doc/update_db/update_276.sql for update
+
 4.03v
 
 1. Option to save bot response as template or quickly copy from another trigger.

@@ -392,16 +392,7 @@ class erLhAbstractModelProactiveChatInvitation {
 
 	public function translateByLocale()
     {
-        $chatLocale = null;
-
-        // Detect user locale
-        if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $parts = explode(';',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            $languages = explode(',',$parts[0]);
-            if (isset($languages[0])) {
-                $chatLocale = $languages[0];
-            }
-        }
+        $chatLocale = erLhcoreClassChatValidator::getVisitorLocale();
 
         // We set custom chat locale only if visitor is not using default siteaccss and default langauge is not english.
         if (erConfigClassLhConfig::getInstance()->getSetting('site','default_site_access') != erLhcoreClassSystem::instance()->SiteAccess) {
@@ -518,7 +509,7 @@ class erLhAbstractModelProactiveChatInvitation {
                 $filter['customfilter'][] = '(last_activity > ' . (int)(time() - 120) . ' OR always_on = 1)';
                 $filter['filterin']['dep_id'] = [$item->dep_id,0];
                 $filter['group'] = 'user_id';
-                $filter['ignore_fields'] = array('exclude_autoasign','max_chats','dep_group_id','type','ro','id','dep_id','hide_online_ts','hide_online','last_activity','lastd_activity','always_on','last_accepted','active_chats','pending_chats','inactive_chats');
+                $filter['ignore_fields'] = array('exclude_autoasign','exc_indv_autoasign','max_chats','dep_group_id','type','ro','id','dep_id','hide_online_ts','hide_online','last_activity','lastd_activity','always_on','last_accepted','active_chats','pending_chats','inactive_chats');
                 $filter['select_columns'] = 'max(`id`) as `id`,user_id';
 
                 if (isset($optionsInvitation['op_max_chats']) && !empty($optionsInvitation['op_max_chats'])) {

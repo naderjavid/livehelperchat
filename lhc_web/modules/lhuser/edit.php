@@ -113,6 +113,26 @@ if ((isset($_POST['Update_account']) || isset($_POST['Save_account'])) && $can_e
     }    
 }
 
+if (isset($_POST['UpdateNotifications_account']) && $can_edit_groups === true) {
+    if (!isset($_POST['csfr_token']) || !$currentUser->validateCSFRToken($_POST['csfr_token'])) {
+        erLhcoreClassModule::redirect('user/edit','/' . $UserData->id);
+        exit;
+    }
+
+    $validateNotificationsData = erLhcoreClassUserValidator::validateNotifications();
+
+    erLhcoreClassModelUserSetting::setSetting('show_alert_chat', $validateNotificationsData['show_alert_chat'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('sn_off', $validateNotificationsData['sn_off'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('ownntfonly', $validateNotificationsData['ownntfonly'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('trackactivity', $validateNotificationsData['trackactivity'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('hide_quick_notifications', $validateNotificationsData['hide_quick_notifications'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('trackactivitytimeout', $validateNotificationsData['trackactivitytimeout'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('show_alert_transfer', $validateNotificationsData['show_alert_transfer'], $UserData->id);
+
+    $tpl->set('account_updated','done');
+    $tpl->set('tab','tab_notifications');
+}
+
 if (isset($_POST['UpdatePending_account']) && $can_edit_groups === true) {
 	if (!isset($_POST['csfr_token']) || !$currentUser->validateCSFRToken($_POST['csfr_token'])) {
 		erLhcoreClassModule::redirect('user/edit', '/'.$UserData->id);
@@ -131,6 +151,8 @@ if (isset($_POST['UpdatePending_account']) && $can_edit_groups === true) {
             'exclude_autoasign' => $UserData->exclude_autoasign,
             'show_all_pending' => erLhcoreClassModelUserSetting::getSetting('show_all_pending',  1, $UserData->id),
             'auto_join_private' =>  erLhcoreClassModelUserSetting::getSetting('auto_join_private',  1, $UserData->id),
+            'remove_closed_chats' =>  erLhcoreClassModelUserSetting::getSetting('remove_closed_chats',  1, $UserData->id),
+            'hide_quick_notifications' =>  erLhcoreClassModelUserSetting::getSetting('hide_quick_notifications',  1, $UserData->id),
         );
         $originalSettings['new'] = $pendingSettings;
 
@@ -144,8 +166,12 @@ if (isset($_POST['UpdatePending_account']) && $can_edit_groups === true) {
         ));
     }
 
-	erLhcoreClassModelUserSetting::setSetting('show_all_pending', $pendingSettings['show_all_pending'], $UserData->id);
-	erLhcoreClassModelUserSetting::setSetting('auto_join_private', $pendingSettings['auto_join_private'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('show_all_pending', $pendingSettings['show_all_pending'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('auto_join_private', $pendingSettings['auto_join_private'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('remove_closed_chats', $pendingSettings['remove_closed_chats'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('auto_preload', $pendingSettings['auto_preload'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('no_scroll_bottom', $pendingSettings['no_scroll_bottom'], $UserData->id);
+    erLhcoreClassModelUserSetting::setSetting('auto_uppercase', $pendingSettings['auto_uppercase'], $UserData->id);
 
     $UserData->auto_accept = $pendingSettings['auto_accept'];
     $UserData->max_active_chats = $pendingSettings['max_chats'];
@@ -160,11 +186,8 @@ if (isset($_POST['UpdatePending_account']) && $can_edit_groups === true) {
     $stmt->bindValue(':exclude_autoasign', $UserData->exclude_autoasign, PDO::PARAM_INT);
     $stmt->execute();
 
-	$tpl->set('account_updated','done');
-	$tpl->set('tab','tab_pending');
-
-
-	
+    $tpl->set('account_updated','done');
+    $tpl->set('tab','tab_pending');
 }
 
 if (isset($_POST['UpdateDepartaments_account']) && $can_edit_groups === true) {
@@ -202,19 +225,30 @@ if (isset($_POST['UpdateDepartaments_account']) && $can_edit_groups === true) {
         $readOnlyDepartments = $departmentEditParams['individual']['remote_id_read_all'];
     }
 
+    $excAutoDepartments = array();
+    if (isset($_POST['UserDepartamentAutoExc']) && count($_POST['UserDepartamentAutoExc']) > 0) {
+        $excAutoDepartments = $_POST['UserDepartamentAutoExc'];
+    }
+
     $UserData->updateThis();
 
     if (count($globalDepartament) > 0) {
-        erLhcoreClassUserDep::addUserDepartaments($globalDepartament, $UserData->id, $UserData, $readOnlyDepartments);
+        erLhcoreClassUserDep::addUserDepartaments($globalDepartament, $UserData->id, $UserData, $readOnlyDepartments, $excAutoDepartments);
     } else {
-        erLhcoreClassUserDep::addUserDepartaments(array(), $UserData->id, $UserData, $readOnlyDepartments);
+        erLhcoreClassUserDep::addUserDepartaments(array(), $UserData->id, $UserData, $readOnlyDepartments, $excAutoDepartments);
     }
 
+    $excludeGroups = erLhcoreClassUserValidator::validateDepartmentsGroup($UserData, array('edit_params' => $departmentEditParams, 'exclude_auto' => true));
+
     // Write
-	erLhcoreClassModelDepartamentGroupUser::addUserDepartmentGroups($UserData, erLhcoreClassUserValidator::validateDepartmentsGroup($UserData,array('edit_params' => $departmentEditParams)));
+	erLhcoreClassModelDepartamentGroupUser::addUserDepartmentGroups($UserData, erLhcoreClassUserValidator::validateDepartmentsGroup($UserData, array('edit_params' => $departmentEditParams)),
+        false,
+        $excludeGroups);
 
     // Read
-    erLhcoreClassModelDepartamentGroupUser::addUserDepartmentGroups($UserData, erLhcoreClassUserValidator::validateDepartmentsGroup($UserData, array('edit_params' => $departmentEditParams, 'read_only' => true)), true);
+    erLhcoreClassModelDepartamentGroupUser::addUserDepartmentGroups($UserData, erLhcoreClassUserValidator::validateDepartmentsGroup($UserData, array('edit_params' => $departmentEditParams, 'read_only' => true)),
+        true,
+        $excludeGroups);
 
 	erLhcoreClassChatEventDispatcher::getInstance()->dispatch('user.after_user_departments_update', array('user' => & $UserData));
 
